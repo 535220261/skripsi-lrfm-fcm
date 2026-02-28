@@ -1,7 +1,21 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from visualization import (
+    plot_clusters,
+    plot_cluster_distribution,
+    cluster_summary,
+    marketing_recommendation
+)
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score
+from fcmeans import FCM
 from loaders import load_shopee, load_tiktok, load_lazada
 from segmentation import calculate_lrfm, run_fcm
+
 
 st.set_page_config(page_title="Segmentasi Pelanggan Elleano", layout="wide")
 
@@ -84,5 +98,22 @@ if st.button("Proses Segmentasi"):
                     "Monetary": lambda x: f"Rp {int(x):,}".replace(",", ".")
                 })
             )
+        st.divider()
+
+        # =============================
+        # VISUALISASI CLUSTER
+        # =============================
+        st.header("📊 Visualisasi Hasil Clustering")
+
+        plot_clusters(result)
+        plot_cluster_distribution(result)
+
+        st.divider()
+
+        # =============================
+        # RINGKASAN & STRATEGI
+        # =============================
+        summary = cluster_summary(result)
+        marketing_recommendation(summary)
     else:
         st.warning("Upload minimal satu file marketplace.")
