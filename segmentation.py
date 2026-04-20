@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-# ==============================
 # HITUNG LRFM
-# ==============================
 def calculate_lrfm(df):
 
     # Pastikan order_date datetime
@@ -25,15 +23,12 @@ def calculate_lrfm(df):
         "total_amount": "sum"
     })
 
-    lrfm.columns = ["Length", "Recency", "Frequency", "Monetary"]
+    lrfm.columns = ["Recency", "Length", "Frequency", "Monetary"]
     lrfm = lrfm.reset_index()
 
     return lrfm
 
-
-# ==============================
 # FCM CLUSTERING
-# ==============================
 def run_fcm(lrfm, n_clusters=4):
 
     features = ["Recency", "Length", "Frequency", "Monetary"]

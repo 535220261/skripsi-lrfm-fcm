@@ -116,3 +116,20 @@ def marketing_recommendation(summary):
             - Retargeting ads
             - Promo ringan
             """)
+
+            # ==============================
+# PIE CHART DISTRIBUSI CLUSTER (PLOTLY)
+# ==============================
+import plotly.express as px
+
+def plot_pie_cluster(lrfm):
+
+    cluster_counts = lrfm["Cluster"].value_counts().sort_index()
+
+    fig = px.pie(
+        values=cluster_counts.values,
+        names=[f"Cluster {i}" for i in cluster_counts.index],
+        title="Distribusi Pelanggan per Cluster"
+    )
+
+    return fig, cluster_counts
