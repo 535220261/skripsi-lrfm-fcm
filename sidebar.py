@@ -1,79 +1,69 @@
 import streamlit as st
 
-
 def render_sidebar():
 
+    # =========================
+    # STYLE
+    # =========================
     st.sidebar.markdown("""
         <style>
-        /* Hilangkan style default button */
-        .stButton > button {
-            border: none;
-            background: none;
-            padding: 0;
-        }
-
-        /* Custom button */
-        .nav-btn {
-            display: block;
-            width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            text-align: left;
-            font-weight: 500;
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Active */
-        .active {
-            background-color: #6c757d;
-        }
-
-        /* Non-active */
-        .inactive {
-            background-color: #343a40;
-        }
-
-        /* Hover effect halus */
-        .nav-btn:hover {
-            opacity: 0.85;
-        }
-
-        /* Label kecil */
+        /* Label */
         .nav-label {
             color: #adb5bd;
             font-size: 12px;
-            margin-top: 10px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
+
+        /* Dropdown styling */
+        div[data-baseweb="select"] > div {
+            background-color: #343a40 !important;
+            border-radius: 10px !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        /* Text dalam dropdown */
+        div[data-baseweb="select"] span {
+            color: white !important;
+        }
+
+        /* Dropdown list */
+        ul[role="listbox"] {
+            background-color: #343a40 !important;
+        }
+
+        li[role="option"] {
+            color: white !important;
+        }
+
+        /* Highlight selected option */
+        li[aria-selected="true"] {
+            background-color: #6c757d !important;
+        }
+
         </style>
     """, unsafe_allow_html=True)
 
-    # HEADER
-    st.sidebar.markdown("### 📊 Elleano Dashboard")
-
-    # LABEL
-    st.sidebar.markdown('<div class="nav-label">Navigasi</div>', unsafe_allow_html=True)
-    st.sidebar.markdown('<div class="nav-label">Pilih halaman</div>', unsafe_allow_html=True)
-
-    # STATE HALAMAN
+    # INIT STATE
     if "page" not in st.session_state:
         st.session_state.page = "Beranda"
 
-    def nav_button(label):
-        is_active = st.session_state.page == label
-        css_class = "nav-btn active" if is_active else "nav-btn inactive"
+    # LABEL
+    st.sidebar.markdown(
+        "<div class='nav-label'>Navigasi Halaman</div>",
+        unsafe_allow_html=True
+    )
 
-        if st.sidebar.button(label, key=label):
-            st.session_state.page = label
+    # DROPDOWN MENU
+    pages = ["Beranda", "Unggah Data File", "Hasil Clustering"]
 
-        st.sidebar.markdown(
-            f'<div class="{css_class}">{label}</div>',
-            unsafe_allow_html=True
-        )
+    selected_page = st.sidebar.selectbox(
+        label="",
+        options=pages,
+        index=pages.index(st.session_state.page)
+    )
 
-    # MENU
-    nav_button("Beranda")
-    nav_button("Unggah Data File")
-    nav_button("Hasil Clustering")
+    # =========================
+    # UPDATE STATE
+    # =========================
+    st.session_state.page = selected_page

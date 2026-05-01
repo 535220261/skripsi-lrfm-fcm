@@ -4,7 +4,6 @@ from sklearn.metrics import silhouette_score
 import numpy as np
 import pandas as pd
 
-
 # HITUNG LRFM
 def calculate_lrfm(df):
 

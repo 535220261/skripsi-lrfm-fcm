@@ -24,6 +24,9 @@ def show_upload():
 
     c_value = st.slider("Pilih jumlah cluster (C)", 2, 8, 4)
 
+    # =========================
+    # 🔥 PINDAHKAN KE SINI
+    # =========================
     if st.button("Proses Segmentasi"):
 
         dataframes = []
@@ -44,17 +47,20 @@ def show_upload():
             dataframes.append(df_lazada)
             total_removed_return += removed
 
-        if dataframes:
-            df_all = pd.concat(dataframes)
+        if len(dataframes) == 0:
+            st.warning("Silakan upload minimal 1 file marketplace.")
+            st.stop()
 
-            lrfm = calculate_lrfm(df_all)
+        df_all = pd.concat(dataframes, ignore_index=True)
 
-            # Simpan ke session_state untuk halaman clustering
-            st.session_state["df_all"] = df_all
-            st.session_state["lrfm"] = lrfm
-            st.session_state["c_value"] = c_value
-            st.session_state["total_removed_return"] = total_removed_return
+        used_platforms = df_all["marketplace"].unique()
+        st.info(f"Data diproses dari: {', '.join(used_platforms)}")
 
-            st.success("Data berhasil diproses. Silakan buka halaman 'Hasil Clustering'.")
-        else:
-            st.warning("Upload minimal satu file marketplace.")
+        lrfm = calculate_lrfm(df_all)
+
+        st.session_state["df_all"] = df_all
+        st.session_state["lrfm"] = lrfm
+        st.session_state["c_value"] = c_value
+        st.session_state["total_removed_return"] = total_removed_return
+
+        st.success("Data berhasil diproses. Silakan buka halaman 'Hasil Clustering'.")

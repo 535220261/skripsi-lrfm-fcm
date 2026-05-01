@@ -138,7 +138,7 @@ def load_tiktok(file):
     df = df[~return_mask]
 
     # Hapus monetary 0
-    # Pastikan numeric sebelum filter
+    # Memastikan numeric sebelum filter
     df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
     df = df[df["total_amount"] > 0]
 

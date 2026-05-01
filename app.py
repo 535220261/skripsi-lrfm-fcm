@@ -4,7 +4,19 @@ from pages.beranda import show_beranda
 from pages.upload import show_upload
 from pages.clustering import show_clustering
 
-st.set_page_config(page_title="Segmentasi Pelanggan Elleano", layout="wide")
+st.set_page_config(
+    page_title="Segmentasi Pelanggan Elleano",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+st.markdown("""
+    <style>
+        [data-testid="stSidebarNav"] {
+            display: none;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # Sidebar
 render_sidebar()

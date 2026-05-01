@@ -4,10 +4,7 @@ import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 
-
-# ==============================
 # VISUALISASI PCA CLUSTER
-# ==============================
 def plot_clusters(lrfm):
 
     features = ["Recency", "Length", "Frequency", "Monetary"]
@@ -35,10 +32,7 @@ def plot_clusters(lrfm):
     st.pyplot(plt)
     plt.close()
 
-
-# ==============================
 # DISTRIBUSI JUMLAH CUSTOMER
-# ==============================
 def plot_cluster_distribution(lrfm):
 
     plt.figure(figsize=(6,4))
@@ -48,10 +42,7 @@ def plot_cluster_distribution(lrfm):
     st.pyplot(plt)
     plt.close()
 
-
-# ==============================
 # RINGKASAN LRFM PER CLUSTER
-# ==============================
 def cluster_summary(lrfm):
 
     summary = lrfm.groupby("Cluster")[[
@@ -63,10 +54,7 @@ def cluster_summary(lrfm):
 
     return summary
 
-
-# ==============================
 # REKOMENDASI STRATEGI PEMASARAN
-# ==============================
 def marketing_recommendation(summary):
 
     st.subheader("🎯 Rekomendasi Strategi Pemasaran")
@@ -117,9 +105,7 @@ def marketing_recommendation(summary):
             - Promo ringan
             """)
 
-            # ==============================
 # PIE CHART DISTRIBUSI CLUSTER (PLOTLY)
-# ==============================
 import plotly.express as px
 
 def plot_pie_cluster(lrfm):

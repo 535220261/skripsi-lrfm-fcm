@@ -33,9 +33,7 @@ def show_clustering():
 
     st.divider()
 
-    # ===============================
     # 2. PIE CHART
-    # ===============================
     st.markdown("###Distribusi Cluster")
 
     fig, cluster_counts = plot_pie_cluster(result)
@@ -53,9 +51,7 @@ def show_clustering():
 
     st.divider()
 
-    # ===============================
     # 3. DETAIL CLUSTER
-    # ===============================
     st.markdown("###Detail Cluster")
 
     selected_cluster = st.selectbox(
@@ -74,9 +70,7 @@ def show_clustering():
 
     st.divider()
 
-    # ===============================
     # 4. DESKRIPSI & STRATEGI
-    # ===============================
     st.markdown("###Deskripsi dan Strategi")
 
     for i in range(c_value):
