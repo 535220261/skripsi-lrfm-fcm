@@ -1,35 +1,43 @@
 import pandas as pd
+import re
 
-# FUNGSI UMUM MEMBERSIHKAN FORMAT
+# CLEAN CURRENCY
+def clean_currency(value):
+
+    if pd.isna(value):
+        return None
+
+    # Kalau sudah numeric → aman
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    value = str(value)
+
+    # Hapus semua karakter selain angka
+    value = re.sub(r"[^\d]", "", value)
+
+    try:
+        return float(value)
+    except:
+        return None
+
+# CLEAN COMMON DATA
 def clean_common(df):
 
     # Konversi tanggal
     df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
 
-    # BERSIHKAN FORMAT UANG LEBIH AMAN
-    df["total_amount"] = (
-        df["total_amount"]
-        .astype(str)
-        .str.replace(".", "", regex=False)
-        .str.replace(",", ".", regex=False)
-    )
+    # Bersihkan monetary
+    df["total_amount"] = df["total_amount"].apply(clean_currency)
 
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
-
-    # Konversi ke numeric SEKALI LAGI secara paksa
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
-
-    # Hapus yang gagal konversi
+    # Hapus data invalid
     df = df.dropna(subset=["order_date", "total_amount"])
-
-    # Pastikan benar-benar float
-    df["total_amount"] = df["total_amount"].astype(float)
 
     return df
 
-
-# DEDUPLICATE PER ORDER
+# DEDUPLICATE ORDER
 def deduplicate_order(df, sum_amount=False):
+
     agg_method = "sum" if sum_amount else "first"
 
     df = df.groupby("order_id").agg({
@@ -40,8 +48,7 @@ def deduplicate_order(df, sum_amount=False):
 
     return df
 
-
-# SHOPEE
+# SHOPEE LOADER
 def load_shopee(file):
 
     df = pd.read_excel(file)
@@ -64,7 +71,10 @@ def load_shopee(file):
         "Status Pembatalan/ Pengembalian": "cancel_return_status"
     })
 
-    # BUANG STATUS CANCEL / BATAL UMUM
+    # CLEAN FORMAT
+    df = clean_common(df)
+
+    # FILTER STATUS BATAL
     df = df[~df["status"].str.lower().isin([
         "batal",
         "dibatalkan",
@@ -72,32 +82,26 @@ def load_shopee(file):
         "canceled"
     ])]
 
-    # FILTER KHUSUS SHOPEE (Retur/Refund)
-    # Hitung dulu jumlah yang akan dihapus
+    # FILTER RETUR
     return_mask = ~(
         (df["cancel_return_status"].isna()) |
         (df["cancel_return_status"].str.lower() == "masalah diselesaikan")
     )
 
     removed_return_count = return_mask.sum()
-
-    # Simpan hanya yang valid
     df = df[~return_mask]
 
-    # HAPUS MONETARY 0
-
-    # Pastikan numeric sebelum filter
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
+    # FILTER NILAI 0
     df = df[df["total_amount"] > 0]
 
+    # DEDUP
     df = deduplicate_order(df, sum_amount=False)
 
     df["marketplace"] = "Shopee"
 
     return df, removed_return_count
 
-
-# TIKTOK
+# TIKTOK LOADER
 def load_tiktok(file):
 
     df = pd.read_excel(file)
@@ -120,7 +124,10 @@ def load_tiktok(file):
         "Cancelation/Return Type": "cancel_return_type"
     })
 
-    # BUANG STATUS CANCEL UMUM
+    # CLEAN
+    df = clean_common(df)
+
+    # FILTER STATUS
     df = df[~df["status"].str.lower().isin([
         "cancelled",
         "canceled",
@@ -129,29 +136,26 @@ def load_tiktok(file):
         "failed"
     ])]
 
-    # FILTER KHUSUS TIKTOK (Retur/Refund)
-
+    # FILTER RETUR
     return_mask = df["cancel_return_type"].notna()
 
     removed_return_count = return_mask.sum()
-
     df = df[~return_mask]
 
-    # Hapus monetary 0
-    # Memastikan numeric sebelum filter
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
+    # FILTER NILAI 0
     df = df[df["total_amount"] > 0]
 
+    # DEDUP
     df = deduplicate_order(df, sum_amount=False)
 
     df["marketplace"] = "TikTok"
 
     return df, removed_return_count
 
-# LAZADA
+# LAZADA LOADER
 def load_lazada(file):
 
-    df = pd.read_excel(file)
+    df = pd.read_excel(file, skiprows=[1])
 
     df = df[[
         "customerName",
@@ -170,7 +174,10 @@ def load_lazada(file):
         "buyerFailedDeliveryReturnInitiator": "failed_return_initiator"
     })
 
-    # BUANG STATUS CANCEL UMUM
+    # CLEAN
+    df = clean_common(df)
+
+    # FILTER STATUS
     df = df[~df["status"].str.lower().isin([
         "canceled",
         "cancelled",
@@ -179,18 +186,16 @@ def load_lazada(file):
         "failed"
     ])]
 
-    # FILTER KHUSUS LAZADA (Retur/Refund)
+    # FILTER RETUR
     return_mask = df["failed_return_initiator"].notna()
 
     removed_return_count = return_mask.sum()
-
     df = df[~return_mask]
 
-    # Hapus monetary 0
-    # Pastikan numeric sebelum filter
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
+    # FILTER NILAI 0
     df = df[df["total_amount"] > 0]
 
+    # DEDUP (LAZADA SUM)
     df = deduplicate_order(df, sum_amount=True)
 
     df["marketplace"] = "Lazada"

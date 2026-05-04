@@ -24,9 +24,7 @@ def show_upload():
 
     c_value = st.slider("Pilih jumlah cluster (C)", 2, 8, 4)
 
-    # =========================
     # 🔥 PINDAHKAN KE SINI
-    # =========================
     if st.button("Proses Segmentasi"):
 
         dataframes = []
@@ -62,5 +60,13 @@ def show_upload():
         st.session_state["lrfm"] = lrfm
         st.session_state["c_value"] = c_value
         st.session_state["total_removed_return"] = total_removed_return
+        st.session_state["processing_done"] = True
 
-        st.success("Data berhasil diproses. Silakan buka halaman 'Hasil Clustering'.")
+    # NAVIGASI KE HASIL
+    if st.session_state.get("processing_done"):
+
+        st.success("Data berhasil diproses ✅")
+
+        if st.button("➡️ Lihat Hasil Clustering"):
+            st.session_state.page = "Hasil Clustering"
+            st.rerun()

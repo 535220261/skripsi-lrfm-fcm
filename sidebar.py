@@ -2,9 +2,7 @@ import streamlit as st
 
 def render_sidebar():
 
-    # =========================
     # STYLE
-    # =========================
     st.sidebar.markdown("""
         <style>
         /* Label */
@@ -58,12 +56,12 @@ def render_sidebar():
     pages = ["Beranda", "Unggah Data File", "Hasil Clustering"]
 
     selected_page = st.sidebar.selectbox(
-        label="",
-        options=pages,
-        index=pages.index(st.session_state.page)
+        "Pilih Halaman",
+        ["Beranda", "Unggah Data File", "Hasil Clustering"],
+        index=["Beranda", "Unggah Data File", "Hasil Clustering"].index(st.session_state.page),
+        label_visibility="collapsed"
     )
 
-    # =========================
-    # UPDATE STATE
-    # =========================
-    st.session_state.page = selected_page
+    if selected_page != st.session_state.page:
+        st.session_state.page = selected_page
+        st.rerun()
