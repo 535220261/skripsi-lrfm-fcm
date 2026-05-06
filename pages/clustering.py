@@ -77,13 +77,41 @@ def show_clustering():
 
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric(
-        "Silhouette Score",
-        f"{silhouette:.3f}",
-        help="""
-    Indikator ketepatan pengelompokan (rentang -1 hingga 1). Semakin mendekati 1, perbedaan karakteristik antar kelompok semakin jelas dan akurat.
+    with col1:
+        st.metric(
+            "Silhouette Score",
+            f"{silhouette:.3f}",
+            help="""
+    Indikator kualitas clustering (rentang -1 sampai 1).
+    Semakin mendekati 1 = cluster semakin jelas terpisah.
+    Mendekati 0 = cluster saling overlap.
+    Negatif = kemungkinan salah pengelompokan.
     """
-    )
+        )
+
+    # FEEDBACK SILHOUETTE SCORE
+    if silhouette >= 0.5:
+        st.success("Clustering sangat baik 👍 Cluster memiliki pemisahan yang jelas.")
+
+    elif 0.25 <= silhouette < 0.5:
+        st.info("Clustering cukup baik. Namun masih bisa ditingkatkan dengan mencoba jumlah cluster (C) yang berbeda.")
+
+    elif 0 <= silhouette < 0.25:
+        st.warning("""
+    Clustering kurang optimal ⚠️  
+    Disarankan untuk mencoba jumlah cluster (C) yang berbeda agar mendapatkan hasil segmentasi yang lebih baik.
+    """)
+
+    else:  # silhouette < 0
+        st.error("""
+    Clustering buruk ❌  
+    Data kemungkinan tidak tersegmentasi dengan baik.
+
+    Saran:
+    - Coba ubah jumlah cluster (C)
+    - Pastikan data bersih (tidak banyak noise / outlier)
+    - Periksa kembali preprocessing data
+    """)
 
     col2.metric(
         "Jumlah Pesanan",
@@ -100,7 +128,7 @@ def show_clustering():
     col4.metric(
         "Total Omset",
         f"Rp {int(total_omset):,}".replace(",", "."),
-        help="Akumulasi nilai pendapatan bruto (Monetary) dari seluruh pesanan selesai sebelum dikurangi biaya operasional."
+        help="Akumulasi nilai pendapatan bruto (Monetary) dari seluruh pesanan selesai sebelum dikurangi biaya admin marketplace dan biaya operasional."
     )
 
     st.divider()

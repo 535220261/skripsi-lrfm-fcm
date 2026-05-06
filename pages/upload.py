@@ -13,7 +13,7 @@ def show_upload():
         shopee_file = st.file_uploader("Upload Data Shopee", type=["xlsx"])
 
     with col2:
-        tiktok_file = st.file_uploader("Upload Data TikTok Shop", type=["xlsx"])
+        tiktok_file = st.file_uploader("Upload Data TikTok Shop", type=["csv"])
 
     with col3:
         lazada_file = st.file_uploader("Upload Data Lazada", type=["xlsx"])
