@@ -170,10 +170,7 @@ Sistem akan mencoba beberapa jumlah cluster dan memilih hasil segmentasi terbaik
 
         total_removed_return = 0
 
-        # ==================================
         # LOAD SHOPEE
-        # ==================================
-
         if shopee_file:
 
             try:
@@ -293,7 +290,6 @@ Silakan upload minimal 1 file marketplace terlebih dahulu.
             st.stop()
 
         # GABUNGKAN DATA
-
         try:
 
             df_all = pd.concat(
@@ -310,7 +306,6 @@ Silakan upload minimal 1 file marketplace terlebih dahulu.
             st.stop()
 
         # VALIDASI DATA KOSONG
-
         if len(df_all) == 0:
 
             st.error("""
@@ -320,7 +315,6 @@ Silakan upload minimal 1 file marketplace terlebih dahulu.
             st.stop()
 
         # MARKETPLACE DIGUNAKAN
-
         used_platforms = (
             df_all["marketplace"]
             .dropna()
@@ -328,7 +322,6 @@ Silakan upload minimal 1 file marketplace terlebih dahulu.
         )
 
         # PERIODE DATASET
-
         try:
 
             min_date = pd.to_datetime(

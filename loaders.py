@@ -106,20 +106,17 @@ def load_shopee(file):
 
 def load_tiktok(file):
 
-    # Baca sebagai CSV (lebih aman untuk export TikTok)
+    # READ CSV
     df = pd.read_csv(file)
 
-    # Ambil header asli (baris pertama)
+    # Header asli
     columns = df.columns.tolist()
 
-    # Buang baris ke-2 (index 0 setelah read_csv)
+    # Buang baris kedua export TikTok
     df = df.drop(index=0).reset_index(drop=True)
 
-    # Set ulang kolom (biar bersih)
+    # Set ulang kolom
     df.columns = columns
-
-    # DEBUG (hapus nanti kalau sudah normal)
-    print("KOLOM TERBACA:", df.columns.tolist())
 
     # VALIDASI KOLOM
     expected_columns = [
@@ -131,10 +128,23 @@ def load_tiktok(file):
         "Cancelation/Return Type"
     ]
 
-    missing = [col for col in expected_columns if col not in df.columns]
+    missing = [
+        col for col in expected_columns
+        if col not in df.columns
+    ]
 
     if missing:
-        raise ValueError(f"Kolom tidak ditemukan: {missing}")
+
+        raise ValueError(
+            f"""
+File TikTok tidak sesuai.
+
+Kolom berikut tidak ditemukan:
+{missing}
+
+Pastikan file berasal dari export resmi TikTok Shop Seller Center.
+"""
+        )
 
     # SELECT KOLOM
     df = df[expected_columns]
@@ -149,36 +159,76 @@ def load_tiktok(file):
         "Cancelation/Return Type": "cancel_return_type"
     })
 
-    # CLEAN NUMERIC
+    # NORMALISASI USERNAME
+    df["username"] = (
+        df["username"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
+
+    # FORMAT TANGGAL
+    df["order_date"] = pd.to_datetime(
+        df["order_date"],
+        errors="coerce",
+        dayfirst=True
+    )
+
+    # Hapus tanggal invalid
+    df = df.dropna(subset=["order_date"])
+
+    # CLEAN MONETARY
     df["total_amount"] = (
         df["total_amount"]
         .astype(str)
-        .str.replace(",", "")
-        .str.replace("Rp", "")
+        .str.replace(",", "", regex=False)
+        .str.replace("Rp", "", regex=False)
         .str.strip()
     )
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
+
+    df["total_amount"] = (
+        pd.to_numeric(
+            df["total_amount"],
+            errors="coerce"
+        )
+        .fillna(0)
+        .astype(int)
+    )
 
     # FILTER STATUS
-    df = df[~df["status"].str.lower().isin([
-        "cancelled",
-        "canceled",
-        "returned",
-        "refund",
-        "failed"
-    ])]
+    df = df[
+        ~df["status"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "cancelled",
+            "canceled",
+            "returned",
+            "refund",
+            "failed"
+        ])
+    ]
 
     # FILTER RETURN
-    return_mask = df["cancel_return_type"].notna()
+    return_mask = (
+        df["cancel_return_type"]
+        .notna()
+    )
+
     removed_return_count = return_mask.sum()
+
     df = df[~return_mask]
 
-    # FILTER NILAI 0
+    # FILTER MONETARY
     df = df[df["total_amount"] > 0]
 
-    # DEDUP
-    df = deduplicate_order(df, sum_amount=False)
+    # DEDUPLICATE
+    df = deduplicate_order(
+        df,
+        sum_amount=False
+    )
 
+    # MARKETPLACE
     df["marketplace"] = "TikTok"
 
     return df, removed_return_count
@@ -186,48 +236,111 @@ def load_tiktok(file):
 # LAZADA
 def load_lazada(file):
 
+    # READ EXCEL
     df = pd.read_excel(file)
 
-    df = df[[
+    # VALIDASI KOLOM
+    expected_columns = [
         "customerName",
         "orderNumber",
         "createTime",
         "paidPrice",
         "status",
         "buyerFailedDeliveryReturnInitiator"
-    ]]
+    ]
 
+    missing = [
+        col for col in expected_columns
+        if col not in df.columns
+    ]
+
+    if missing:
+
+        raise ValueError(
+            f"""
+File Lazada tidak sesuai.
+
+Kolom berikut tidak ditemukan:
+{missing}
+
+Pastikan file berasal dari export resmi Lazada Seller Center.
+"""
+        )
+
+    # SELECT KOLOM
+    df = df[expected_columns]
+
+    # RENAME
     df = df.rename(columns={
         "customerName": "username",
         "orderNumber": "order_id",
         "createTime": "order_date",
         "paidPrice": "total_amount",
-        "buyerFailedDeliveryReturnInitiator": "failed_return_initiator"
+        "buyerFailedDeliveryReturnInitiator":
+        "failed_return_initiator"
     })
 
-    # BUANG STATUS CANCEL UMUM
-    df = df[~df["status"].str.lower().isin([
-        "canceled",
-        "cancelled",
-        "returned",
-        "refund",
-        "failed"
-    ])]
+    # NORMALISASI USERNAME
+    df["username"] = (
+        df["username"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+    )
 
-    # FILTER KHUSUS LAZADA (Retur/Refund)
-    return_mask = df["failed_return_initiator"].notna()
+    # FORMAT TANGGAL
+    df["order_date"] = pd.to_datetime(
+        df["order_date"],
+        errors="coerce"
+    )
+
+    # Hapus tanggal invalid
+    df = df.dropna(subset=["order_date"])
+
+    # FORMAT MONETARY
+    df["total_amount"] = (
+        pd.to_numeric(
+            df["total_amount"],
+            errors="coerce"
+        )
+        .fillna(0)
+        .astype(int)
+    )
+
+    # FILTER STATUS
+    df = df[
+        ~df["status"]
+        .astype(str)
+        .str.lower()
+        .isin([
+            "canceled",
+            "cancelled",
+            "returned",
+            "refund",
+            "failed"
+        ])
+    ]
+
+    # FILTER RETURN
+    return_mask = (
+        df["failed_return_initiator"]
+        .notna()
+    )
 
     removed_return_count = return_mask.sum()
 
     df = df[~return_mask]
 
-    # Hapus monetary 0
-    # Pastikan numeric sebelum filter
-    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
+    # FILTER MONETARY
     df = df[df["total_amount"] > 0]
 
-    df = deduplicate_order(df, sum_amount=True)
+    # DEDUPLICATE
+    df = deduplicate_order(
+        df,
+        sum_amount=True
+    )
 
+    # MARKETPLACE
     df["marketplace"] = "Lazada"
 
     return df, removed_return_count

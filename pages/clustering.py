@@ -4,7 +4,6 @@ from segmentation import run_fcm
 from visualization import plot_pie_cluster
 
 # LABEL CLUSTER OTOMATIS
-
 def label_clusters(result):
 
     summary = result.groupby("Cluster").agg({
@@ -47,10 +46,7 @@ def label_clusters(result):
     return summary[["Cluster", "Label"]]
 
 
-# ==========================================
 # INTERPRETASI KUALITAS SEGMENTASI
-# ==========================================
-
 def show_segmentation_quality(score):
 
     if score >= 0.5:
@@ -87,16 +83,10 @@ Disarankan mencoba jumlah cluster yang berbeda.
 """)
 
 
-# ==========================================
 # STRATEGI CLUSTER
-# ==========================================
-
 def show_cluster_strategy(label):
 
-    # ======================================
     # CHAMPIONS
-    # ======================================
-
     if label == "Champions":
 
         st.success("Champions")
@@ -119,10 +109,7 @@ Pelanggan paling bernilai bagi bisnis dengan kontribusi transaksi dan loyalitas 
 - Early access produk baru
 """)
 
-    # ======================================
     # LOYAL
-    # ======================================
-
     elif label == "Loyal Customers":
 
         st.success("Loyal Customers")
@@ -144,10 +131,7 @@ Pelanggan yang telah mempercayai brand dan cenderung melakukan repeat order seca
 - Upselling produk premium
 """)
 
-    # ======================================
     # POTENTIAL
-    # ======================================
-
     elif label == "Potential Loyalists":
 
         st.info("Potential Loyalists")
@@ -169,10 +153,7 @@ Memiliki peluang berkembang menjadi pelanggan loyal apabila diberikan pengalaman
 - Follow up customer baru
 """)
 
-    # ======================================
     # NEW
-    # ======================================
-
     elif label == "New Customers":
 
         st.info("New Customers")
@@ -192,10 +173,7 @@ Pelanggan baru yang masih berada pada tahap awal hubungan dengan bisnis.
 - Edukasi produk
 """)
 
-    # ======================================
     # AT RISK
-    # ======================================
-
     elif label == "At Risk Customers":
 
         st.warning("At Risk Customers")
@@ -215,10 +193,7 @@ Pelanggan mulai kehilangan ketertarikan terhadap bisnis dan berisiko churn.
 - Retargeting iklan
 """)
 
-    # ======================================
     # ABOUT TO SLEEP
-    # ======================================
-
     elif label == "About To Sleep":
 
         st.warning("About To Sleep")
@@ -238,10 +213,7 @@ Pelanggan yang hampir tidak aktif dan berpotensi segera hilang.
 - Broadcast campaign
 """)
 
-    # ======================================
     # HIGH SPENDER
-    # ======================================
-
     elif label == "High Spender Infrequent":
 
         st.info("High Spender Infrequent")
@@ -261,10 +233,7 @@ Pelanggan dengan kontribusi monetary besar namun jarang bertransaksi.
 - Priority service
 """)
 
-    # ======================================
     # LOST
-    # ======================================
-
     else:
 
         st.error("Lost Customers")
@@ -315,10 +284,7 @@ Silakan proses data terlebih dahulu pada halaman Upload Data.
         "-"
     )
 
-    # ======================================
     # RUN FCM
-    # ======================================
-
     with st.spinner(
         "Melakukan segmentasi pelanggan..."
     ):
@@ -328,10 +294,7 @@ Silakan proses data terlebih dahulu pada halaman Upload Data.
             n_clusters=c_value
         )
 
-    # ======================================
     # LABELING
-    # ======================================
-
     cluster_labels = label_clusters(result)
 
     result = result.merge(
@@ -340,10 +303,7 @@ Silakan proses data terlebih dahulu pada halaman Upload Data.
         how="left"
     )
 
-    # ======================================
     # RINGKASAN UMUM
-    # ======================================
-
     st.markdown("## Ringkasan Hasil Segmentasi")
 
     total_pelanggan = result["username"].nunique()
@@ -396,10 +356,7 @@ Jumlah cluster digunakan:
 
     st.divider()
 
-    # ======================================
     # DISTRIBUSI CLUSTER
-    # ======================================
-
     st.markdown("## Distribusi Segmentasi")
 
     fig, cluster_counts = plot_pie_cluster(
@@ -413,10 +370,7 @@ Jumlah cluster digunakan:
 
     st.divider()
 
-    # ======================================
     # DESKRIPSI CLUSTER
-    # ======================================
-
     st.markdown("## Deskripsi dan Strategi Cluster")
 
     clusters = sorted(
@@ -427,10 +381,7 @@ Jumlah cluster digunakan:
 
         col1, col2 = st.columns(2)
 
-        # ==================================
         # KOLOM 1
-        # ==================================
-
         with col1:
 
             cluster_id = clusters[idx]
@@ -445,10 +396,7 @@ Jumlah cluster digunakan:
 
                 show_cluster_strategy(label)
 
-        # ==================================
         # KOLOM 2
-        # ==================================
-
         if idx + 1 < len(clusters):
 
             with col2:
@@ -467,10 +415,7 @@ Jumlah cluster digunakan:
 
     st.divider()
 
-    # ======================================
     # DETAIL CLUSTER
-    # ======================================
-
     st.markdown("## Detail Data Pelanggan")
 
     selected_cluster = st.selectbox(
