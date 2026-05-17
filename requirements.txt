@@ -6,4 +6,3 @@ matplotlib
 seaborn
 fuzzy-c-means
 scikit-fuzzy
-matplotlib.pyplot
