@@ -7,3 +7,4 @@ seaborn
 fuzzy-c-means
 scikit-fuzzy
 plotly
+openpyxl
